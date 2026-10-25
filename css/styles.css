@@ -227,6 +227,13 @@ main.wrap { display: flex; flex-direction: column; gap: 16px; padding-top: 20px;
   border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
+/* liquid cursor trail: above content, never blocks clicks, only brightens (screen) */
+.liquid {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 30;
+  pointer-events: none; mix-blend-mode: screen; opacity: 0.6;
+}
+.liquid[hidden] { display: none; }
+
 /* responsive */
 @media (max-width: 1100px) {
   .grid-main, .grid-2 { grid-template-columns: minmax(0, 1fr); }
@@ -247,6 +254,14 @@ main.wrap { display: flex; flex-direction: column; gap: 16px; padding-top: 20px;
   .feed-row { grid-template-columns: auto 1fr auto; grid-template-areas: "pill time tx" "amt amt amt" "path path path"; }
   .hide-sm, .share-col { display: none; }
 }
+/* Touch screens and reduced-motion users never get the trail (JS gates it too). */
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .liquid { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
 @media (max-width: 480px) {
   .brand-tag, .hide-xs { display: none; }
   .topbar-inner { gap: 10px; }
