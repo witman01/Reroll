@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- The Reroll die mark: brand-green pillowed square, dark pip. -->
+  <defs>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#63f1b0"/>
+      <stop offset="0.72" stop-color="#4aeea0"/>
+      <stop offset="1" stop-color="#36cf85"/>
+    </linearGradient>
+    <radialGradient id="pip" cx="0.5" cy="0.32" r="0.8">
+      <stop offset="0" stop-color="#37373c"/>
+      <stop offset="1" stop-color="#0e0e11"/>
+    </radialGradient>
+    <clipPath id="sq"><rect x="5" y="5" width="90" height="90" rx="24"/></clipPath>
+  </defs>
+  <rect x="5" y="5" width="90" height="90" rx="24" fill="url(#face)"/>
+  <!-- bottom pillow shade -->
+  <ellipse cx="50" cy="103" rx="54" ry="16" fill="#2bb474" opacity="0.5" clip-path="url(#sq)"/>
+  <circle cx="50" cy="46" r="17.5" fill="url(#pip)"/>
+</svg>

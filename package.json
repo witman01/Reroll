@@ -1,0 +1,14 @@
+{
+  "name": "reroll-onchain-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Live onchain dashboard for the REROLL token on HyperEVM",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "snapshot": "node scripts/snapshot.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

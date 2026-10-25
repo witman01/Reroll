@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>REROLL Onchain Dashboard</title>
+  <meta name="description" content="Live onchain data for the REROLL token on HyperEVM: price, liquidity, supply, burns, holders and trades.">
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="https://reroll.gg/" target="_blank" rel="noopener">
+        <img src="assets/logo.svg" alt="" width="30" height="30">
+        <span class="brand-name">Reroll</span>
+        <span class="brand-tag">Onchain</span>
+      </a>
+      <div class="status" id="status" aria-live="polite">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">Connecting…</span>
+      </div>
+      <nav class="topnav">
+        <a class="btn btn-ghost" id="link-dex" target="_blank" rel="noopener">DexScreener</a>
+        <a class="btn btn-primary" href="https://reroll.gg/token" target="_blank" rel="noopener">Play on Reroll</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Hero: price -->
+    <section class="hero card">
+      <div class="hero-left">
+        <div class="token-id">
+          <img src="assets/logo.svg" alt="" width="44" height="44">
+          <div>
+            <h1>REROLL <span class="muted">/ USDC</span></h1>
+            <div class="sub">Project X · HyperEVM · 1% pool</div>
+          </div>
+        </div>
+        <div class="price-row">
+          <span class="price" id="price">—</span>
+          <span class="chg" id="chg24">—</span>
+        </div>
+        <div class="chg-strip" id="chg-strip"></div>
+      </div>
+      <div class="hero-right">
+        <div class="addr-box">
+          <span class="label">Token contract</span>
+          <div class="addr-line">
+            <a class="mono" id="token-addr" target="_blank" rel="noopener"></a>
+            <button class="copy" data-copy-target="token-addr" aria-label="Copy token address">Copy</button>
+          </div>
+        </div>
+        <div class="addr-box">
+          <span class="label">Liquidity pool</span>
+          <div class="addr-line">
+            <a class="mono" id="pool-addr" target="_blank" rel="noopener"></a>
+            <button class="copy" data-copy-target="pool-addr" aria-label="Copy pool address">Copy</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI tiles -->
+    <section class="kpis" aria-label="Core metrics">
+      <div class="kpi card"><div class="kpi-top"><span class="label">Market cap</span><span class="src" id="k-mcap-src">—</span></div><span class="val" id="k-mcap">—</span><span class="hint" id="k-mcap-h">Price × circulating supply</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">FDV</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-fdv">—</span><span class="hint">Price × total supply</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">Liquidity</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-liq">—</span><span class="hint" id="k-liq-h">—</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">24h volume</span><span class="src src-dex">DEX</span></div><span class="val" id="k-vol">—</span><span class="hint" id="k-vol-h">—</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">Holders</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-holders">—</span><span class="hint" id="k-holders-h">Syncing onchain…</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">Circulating supply</span><span class="src src-reroll">Reroll</span></div><span class="val" id="k-circ">—</span><span class="hint" id="k-circ-h">Reported by Reroll</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">Staked</span><span class="src src-reroll">Reroll</span></div><span class="val" id="k-staked">—</span><span class="hint" id="k-staked-h">Held in Reroll custody</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">Burned</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-burn">—</span><span class="hint" id="k-burn-h">—</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">Top 10 wallets</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-top10">—</span><span class="hint" id="k-top10-h">Share of supply held by the 10 largest public wallets</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">All-time high</span><span class="src src-dex">DEX</span></div><span class="val" id="k-ath">—</span><span class="hint" id="k-ath-h">—</span></div>
+    </section>
+
+    <div class="grid-main">
+      <!-- Price chart -->
+      <section class="card chart-card">
+        <div class="card-head">
+          <h2>Price</h2>
+          <div class="seg" role="tablist" id="tf">
+            <button role="tab" data-tf="1h">1H</button>
+            <button role="tab" data-tf="1d" aria-selected="true">24H</button>
+            <button role="tab" data-tf="7d">7D</button>
+            <button role="tab" data-tf="all">All</button>
+          </div>
+        </div>
+        <div class="chart-meta" id="chart-meta">&nbsp;</div>
+        <div id="chart" class="chart"></div>
+        <div class="chart-empty" id="chart-empty" hidden>No candles for this range yet.</div>
+      </section>
+
+      <!-- Supply -->
+      <section class="card supply-card">
+        <div class="card-head">
+          <h2>Supply distribution</h2>
+          <span class="badge" title="Read live from the token contract">Onchain</span>
+        </div>
+        <div class="supply-total">
+          <span class="label">Total supply</span>
+          <span class="val" id="s-total">—</span>
+        </div>
+        <div class="stack" id="s-bar" role="img" aria-label="Supply distribution bar"></div>
+        <ul class="legend" id="s-legend"></ul>
+      </section>
+    </div>
+
+    <div class="grid-2">
+      <!-- Trade activity -->
+      <section class="card">
+        <div class="card-head"><h2>Buy / sell activity</h2><span class="badge">DEX</span></div>
+        <div class="pressure" id="pressure"></div>
+      </section>
+
+      <!-- Live transfers -->
+      <section class="card">
+        <div class="card-head"><h2>Live transfers</h2><span class="badge"><span class="dot dot-sm"></span>Streaming</span></div>
+        <div class="feed" id="feed"><div class="empty">Waiting for the next onchain transfer…</div></div>
+      </section>
+    </div>
+
+    <!-- Trades -->
+    <section class="card">
+      <div class="card-head">
+        <h2>Recent trades</h2>
+        <span class="muted small" id="trades-meta"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="tbl" id="trades">
+          <thead><tr><th>Time</th><th>Type</th><th class="r">REROLL</th><th class="r">USD</th><th class="r">Price</th><th>Wallet</th><th class="r">Tx</th></tr></thead>
+          <tbody><tr><td colspan="7" class="empty">Loading trades…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Holders -->
+    <section class="card">
+      <div class="card-head">
+        <h2>Top holders</h2>
+        <span class="muted small" id="holders-meta"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="tbl" id="holders">
+          <thead><tr><th>#</th><th>Address</th><th class="r">Balance</th><th class="r">% of supply</th><th class="share-col"></th></tr></thead>
+          <tbody><tr><td colspan="5" class="empty">Syncing balances from chain…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p><b>Onchain</b> figures are read directly from HyperEVM (chain 999) via public RPC and verified with <span class="mono">balanceOf</span>. <b>DEX</b> figures come from DexScreener &amp; GeckoTerminal. <b>Reroll</b> figures (circulating, staked) come from Reroll's own API, because staking is held in Reroll custody and isn't visible onchain. Not financial advice.</p>
+      <p class="muted" id="foot-sync"></p>
+      <p class="credit">Built by <b>Orix</b></p>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/chain.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
