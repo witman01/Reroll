@@ -64,6 +64,14 @@
     return parseInt(await rpc("eth_blockNumber", []), 16);
   }
 
+  // Live pool price from the pool's slot0(). REROLL is token0 and USDC is token1, so this is
+  // USDC per REROLL.
+  async function poolPrice() {
+    const res = await rpc("eth_call", [{ to: C.pool.address, data: "0x3850c7bd" }, "latest"]);
+    const sqrt = Number(BigInt("0x" + res.slice(2, 66))) / 2 ** 96;
+    return sqrt * sqrt * 10 ** (C.token.decimals - C.pool.quote.decimals);
+  }
+
   async function totalSupply() {
     return BigInt(await rpc("eth_call", [{ to: C.token.address, data: "0x18160ddd" }, "latest"]));
   }
@@ -123,5 +131,5 @@
     return new Map(uniq.map((b, i) => [b, res[i] ? parseInt(res[i].timestamp, 16) * 1000 : Date.now()]));
   }
 
-  window.Chain = { rpc, batch, blockNumber, totalSupply, balancesOf, transfers, scanTransfers, blockTimes };
+  window.Chain = { rpc, batch, blockNumber, poolPrice, totalSupply, balancesOf, transfers, scanTransfers, blockTimes };
 })();

@@ -67,12 +67,12 @@
 
     <!-- KPI tiles -->
     <section class="kpis" aria-label="Core metrics">
-      <div class="kpi card"><div class="kpi-top"><span class="label">Market cap</span><span class="src" id="k-mcap-src">—</span></div><span class="val" id="k-mcap">—</span><span class="hint" id="k-mcap-h">Price × circulating supply</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">Market cap</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-mcap">—</span><span class="hint">Live pool price × 1B supply (same basis as CoinGecko)</span></div>
       <div class="kpi card"><div class="kpi-top"><span class="label">FDV</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-fdv">—</span><span class="hint">Price × total supply</span></div>
       <div class="kpi card"><div class="kpi-top"><span class="label">Liquidity</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-liq">—</span><span class="hint" id="k-liq-h">—</span></div>
       <div class="kpi card"><div class="kpi-top"><span class="label">24h volume</span><span class="src src-dex">DEX</span></div><span class="val" id="k-vol">—</span><span class="hint" id="k-vol-h">—</span></div>
       <div class="kpi card"><div class="kpi-top"><span class="label">Holders</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-holders">—</span><span class="hint" id="k-holders-h">Syncing onchain…</span></div>
-      <div class="kpi card"><div class="kpi-top"><span class="label">Circulating supply</span><span class="src src-reroll">Reroll</span></div><span class="val" id="k-circ">—</span><span class="hint" id="k-circ-h">Reported by Reroll</span></div>
+      <div class="kpi card"><div class="kpi-top"><span class="label">Circulating supply</span><span class="src src-reroll">Reroll</span></div><span class="val" id="k-circ">—</span><span class="hint" id="k-circ-h">Reroll's own figure, excluding reserves</span></div>
       <div class="kpi card"><div class="kpi-top"><span class="label">Staked</span><span class="src src-reroll">Reroll</span></div><span class="val" id="k-staked">—</span><span class="hint" id="k-staked-h">Held in Reroll custody</span></div>
       <div class="kpi card"><div class="kpi-top"><span class="label">Burned</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-burn">—</span><span class="hint" id="k-burn-h">—</span></div>
       <div class="kpi card"><div class="kpi-top"><span class="label">Top 10 wallets</span><span class="src src-chain">Onchain</span></div><span class="val" id="k-top10">—</span><span class="hint" id="k-top10-h">Share of supply held by the 10 largest public wallets</span></div>
@@ -154,7 +154,7 @@
     </section>
 
     <footer class="foot">
-      <p><b>Onchain</b> figures are read directly from HyperEVM (chain 999) via public RPC and verified with <span class="mono">balanceOf</span>. <b>DEX</b> figures come from DexScreener &amp; GeckoTerminal. <b>Reroll</b> figures (circulating, staked) come from Reroll's own API, because staking is held in Reroll custody and isn't visible onchain. Not financial advice.</p>
+      <p><b>Onchain</b> figures are read directly from HyperEVM (chain 999) via public RPC and verified with <span class="mono">balanceOf</span>. The price is read live from the pool contract. <b>DEX</b> figures come from GeckoTerminal &amp; DexScreener. <b>Reroll</b> figures (circulating, staked) come from Reroll's own API, because staking is held in Reroll custody and isn't visible onchain. Not financial advice.</p>
       <p class="muted" id="foot-sync"></p>
       <p class="credit">Built by <b>Orix</b></p>
     </footer>

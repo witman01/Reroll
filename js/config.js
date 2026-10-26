@@ -35,7 +35,8 @@ window.CONFIG = {
   dexscreener: "https://dexscreener.com/hyperevm/0xc43d5f0077a9da3aa57314b52f1c1cb68997dd35",
   api: {
     dexscreener: "https://api.dexscreener.com/latest/dex/pairs/hyperevm/0xc43d5f0077a9da3aa57314b52f1c1cb68997dd35",
-    gecko: "https://api.geckoterminal.com/api/v2/networks/hyperevm/pools/0xc43d5f0077a9da3aa57314b52f1c1cb68997dd35",
+    // GeckoTerminal pool endpoints via the server's cached proxy (api/gecko.js).
+    gecko: "/api/gecko",
     // Optional same-origin proxy for Reroll's own supply endpoint (api.reroll.gg blocks
     // other origins). See api/reroll-supply.js. The panel stays hidden if this fails.
     rerollSupply: "/api/reroll-supply",

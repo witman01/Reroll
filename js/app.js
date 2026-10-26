@@ -18,6 +18,7 @@
     lastTick: 0,
     poolQuote: null, // USDC in pool, onchain
     verifiedAt: 0,
+    poolPrice: null, // USDC per REROLL, read from the pool contract
     reported: null, // Reroll API (offchain custody)
     ath: null, // { price, time } from hourly candles
     chainOk: false,
@@ -109,23 +110,70 @@
   }
 
   // ---------- market (DexScreener) ----------
+  // Price changes, volume and trade counts. GeckoTerminal tracks the pool closely;
+  // DexScreener is the fallback (it can lag the chain by hours on a quiet pool).
+  async function marketFromGecko() {
+    const a = (await getJson(C.api.gecko)).data.attributes;
+    const num = (x) => (x == null ? null : parseFloat(x));
+    const pc = a.price_change_percentage || {};
+    const v = a.volume_usd || {};
+    const t = a.transactions || {};
+    return {
+      priceUsd: num(a.base_token_price_usd),
+      quoteUsd: num(a.quote_token_price_usd),
+      priceChange: { m5: num(pc.m5), h1: num(pc.h1), h6: num(pc.h6), h24: num(pc.h24) },
+      volume: { m5: num(v.m5), h1: num(v.h1), h6: num(v.h6), h24: num(v.h24) },
+      txns: { m5: t.m5, h1: t.h1, h6: t.h6, h24: t.h24 },
+    };
+  }
+
+  async function marketFromDex() {
+    const json = await getJson(C.api.dexscreener);
+    const p = json.pair || (json.pairs && json.pairs[0]);
+    if (!p) throw new Error("no pair");
+    return { priceUsd: parseFloat(p.priceUsd), quoteUsd: 1, priceChange: p.priceChange, volume: p.volume, txns: p.txns };
+  }
+
   async function loadMarket() {
     try {
-      const json = await getJson(C.api.dexscreener);
-      const p = json.pair || (json.pairs && json.pairs[0]);
-      if (!p) throw new Error("no pair");
-      state.market = p;
-      state.price = parseFloat(p.priceUsd);
-      renderMarket();
+      state.market = await marketFromGecko();
     } catch (err) {
-      console.warn("market", err);
+      try {
+        state.market = await marketFromDex();
+      } catch (err2) {
+        console.warn("market", err, err2);
+        return;
+      }
     }
+    // Until the onchain pool price arrives, show the aggregator's price.
+    if (state.poolPrice == null) state.price = state.market.priceUsd;
+    else state.price = state.poolPrice * (state.market.quoteUsd || 1);
+    renderMarket();
+  }
+
+  // The headline price is read from the pool contract itself (USDC per REROLL × USDC's USD price).
+  async function loadPoolPrice() {
+    try {
+      state.poolPrice = await Chain.poolPrice();
+      state.price = state.poolPrice * (state.market?.quoteUsd || 1);
+      renderPrice();
+      renderValuation();
+      if (state.chainOk) renderSupply();
+    } catch (err) {
+      console.warn("pool price", err);
+    }
+  }
+
+  function renderPrice() {
+    if (state.price == null) return;
+    $("price").textContent = fmtPrice(state.price);
+    document.title = `${fmtPrice(state.price)} · REROLL Onchain Dashboard`;
   }
 
   function renderMarket() {
     const p = state.market;
     if (!p) return;
-    $("price").textContent = fmtPrice(state.price);
+    renderPrice();
     $("chg24").outerHTML = changeHtml(p.priceChange?.h24).replace('class="chg', 'id="chg24" class="chg');
     $("chg-strip").innerHTML = [
       ["5m", p.priceChange?.m5],
@@ -135,7 +183,6 @@
     ]
       .map(([k, v]) => `<span class="chip"><span class="muted">${k}</span>${changeHtml(v)}</span>`)
       .join("");
-    document.title = `${fmtPrice(state.price)} · REROLL Onchain Dashboard`;
 
     $("k-vol").textContent = fmtCompactUsd(p.volume?.h24);
     const t = p.txns?.h24 || {};
@@ -149,16 +196,12 @@
   function renderValuation() {
     const price = state.price;
     if (price == null) return;
-    if (state.totalSupply != null) $("k-fdv").textContent = fmtCompactUsd(tokens(state.totalSupply) * price);
-
-    if (state.reported?.circulating) {
-      $("k-mcap").textContent = fmtCompactUsd(state.reported.circulating * price);
-      $("k-mcap-h").textContent = "Price × circulating supply";
-      setSrc("k-mcap-src", "reroll", "Reroll");
-    } else if (state.market?.marketCap) {
-      $("k-mcap").textContent = fmtCompactUsd(state.market.marketCap);
-      $("k-mcap-h").textContent = "As listed on DexScreener";
-      setSrc("k-mcap-src", "dex", "DEX");
+    // Same basis as CoinGecko, DexScreener and Reroll's own API: the full 1B supply counts as
+    // circulating, so market cap and FDV are equal.
+    if (state.totalSupply != null) {
+      const cap = fmtCompactUsd(tokens(state.totalSupply) * price);
+      $("k-mcap").textContent = cap;
+      $("k-fdv").textContent = cap;
     }
     if (state.reported?.staked) $("k-staked-h").textContent = `${((state.reported.staked / state.reported.circulating) * 100).toFixed(2)}% of circulating · ${fmtCompactUsd(state.reported.staked * price)}`;
     if (state.ath) renderAth();
@@ -178,12 +221,6 @@
     if (burned != null && state.totalSupply) {
       $("k-burn-h").textContent = `${pct(burned, state.totalSupply).toFixed(2)}% of supply · ${fmtCompactUsd(tokens(burned) * price)}`;
     }
-  }
-
-  function setSrc(id, kind, text) {
-    const el = $(id);
-    el.className = "src src-" + kind;
-    el.textContent = text;
   }
 
   // ---------- all-time high (GeckoTerminal hourly candles since launch) ----------
@@ -502,6 +539,7 @@
   }
 
   async function tick() {
+    loadPoolPrice();
     try {
       const head = await Chain.blockNumber();
       state.head = head;
@@ -622,6 +660,7 @@
     setupStatic();
     setupChart();
     await loadMarket();
+    await loadPoolPrice();
     loadChart();
     loadTrades();
     loadReported();

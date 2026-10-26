@@ -6,6 +6,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import rerollSupply from "../api/reroll-supply.js";
+import gecko from "../api/gecko.js";
 import { updateSnapshot } from "./snapshot.mjs";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -26,6 +27,7 @@ http
   .createServer(async (req, res) => {
     const url = new URL(req.url, "http://localhost");
     if (url.pathname === "/api/reroll-supply") return rerollSupply(req, res);
+    if (url.pathname === "/api/gecko" || url.pathname.startsWith("/api/gecko/")) return gecko(req, res);
     if (url.pathname === "/health") return res.writeHead(200, { "content-type": "text/plain" }).end("ok");
 
     const rel = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname).replace(/^\/+/, "");

@@ -21,13 +21,14 @@ browsers block `fetch` on `file://`.)
 | Public wallets | **Chain** | total supply − all labelled wallets |
 | Holders + top holders | **Chain** | Every `Transfer` event replayed from the deploy block, then the top 50 re-verified with `balanceOf` every 60s |
 | Liquidity | **Chain** + price | REROLL and USDC held by the pool contract × price |
-| FDV | **Chain** + price | price × onchain total supply |
 | Top 10 wallets | **Chain** | Share of supply in the 10 largest wallets, excluding treasury, platform, LP and burn |
 | All-time high | GeckoTerminal | Highest hourly candle since launch (or the live price, if higher) |
 | Live transfers | **Chain** | New `Transfer` logs polled every 6s |
-| Price, % change, volume, buys/sells | DexScreener | refreshed every 15s |
+| Price | **Chain** | Read from the pool contract's `slot0()` every 6s |
+| Market cap / FDV | **Chain** + price | price × 1B supply, the same basis CoinGecko, DexScreener and Reroll use |
+| % change, volume, buys/sells | GeckoTerminal (DexScreener fallback) | refreshed every 15s |
 | Price chart, recent trades | GeckoTerminal | refreshed every 60s / 30s |
-| Circulating, staked, market cap | Reroll API (via `/api/reroll-supply`) | Staking is held in Reroll's custody, so it is **not** visible onchain; shown as "Reported by Reroll" |
+| Circulating, staked | Reroll API (via `/api/reroll-supply`) | Staking is held in Reroll's custody, so it is **not** visible onchain; shown as "Reported by Reroll" |
 
 ## Key addresses (HyperEVM, chain 999)
 
